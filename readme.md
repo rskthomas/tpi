@@ -4,6 +4,7 @@ con ACK de parte del servidor y retransmisión de paquetes en caso de pérdida.
 
 
 compilar:   
+            
             # gcc -o cliente client_udp.c   library.h library.c -lssl -lcrypto
 
             # gcc -o servidor server_udp.c library.h library.c -lssl -lcrypto
