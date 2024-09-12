@@ -3,10 +3,15 @@ El programa basado en datagramas UDP implementa un protocolo de transferencia de
 con ACK de parte del servidor y retransmisión de paquetes en caso de pérdida.
 
 
-compilar:   # gcc -o cliente client_udp.c   library.h library.c -lssl -lcrypto
+compilar:   
+            # gcc -o cliente client_udp.c   library.h library.c -lssl -lcrypto
+
             # gcc -o servidor server_udp.c library.h library.c -lssl -lcrypto
+            
             # gcc -o cliente client_tcp.c   library.h library.c -lssl -lcrypto
+            
             # gcc -o servidor server_tcp.c library.h library.c -lssl -lcrypto
+            
 
 ###############################################################################3
 
