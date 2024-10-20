@@ -17,13 +17,13 @@
 #define HASH_SIZE 32
 
 #define FILENAME_SIZE 50
-#define BURST_SIZE 8
+#define BURST_SIZE 40
 
-#define MTU_SIZE 512
+#define MTU_SIZE 1500
 #define PAGE_SIZE (MTU_SIZE - sizeof(int))
 
 #define TIMEOUT_SEC 0
-#define TIMEOUT_USEC 500
+#define TIMEOUT_USEC 100000
 
 #define MAX_RETRIES 3
 
@@ -31,6 +31,8 @@
  * Hashing function declarations
  * TODO: update SHA functions-- deprecated as of openssl 3.0
  */
+
+void set_socket_buffers(int sockfd);
 void calculate_sha256(const unsigned char *data, size_t data_len,
                       unsigned char *sha256_hash);
 void printHex(unsigned char *hash);

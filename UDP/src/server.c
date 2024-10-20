@@ -150,6 +150,7 @@ void handle_connection(int sockfd, struct sockaddr_storage their_addr,
   bool *ack_array = NULL;
   char *file_buf = NULL;
 
+  set_socket_buffers(sockfd);
   int npages = recv_file_info(&file_info, sockfd, their_addr, addr_len);
   initialize_buffers(&ack_array, &file_buf, npages);
 
@@ -173,6 +174,7 @@ void handle_connection(int sockfd, struct sockaddr_storage their_addr,
 
 /*
  * Receive the file from the client
+ * Gets the page from the buffer and sends an ack
  */
 void receive_file(int sockfd, struct sockaddr_storage their_addr,
                   socklen_t addr_len, struct file_metadata *file_info,
@@ -191,6 +193,7 @@ void receive_file(int sockfd, struct sockaddr_storage their_addr,
     FD_SET(sockfd, &readfds);
     struct timeval timeout = {TIMEOUT_SEC, TIMEOUT_USEC};
 
+    // Get page
     if ((numbytes = recvfrom(sockfd, &file_page, MTU_SIZE, 0,
                              (struct sockaddr *)&their_addr, &addr_len)) ==
         -1) {
@@ -199,15 +202,19 @@ void receive_file(int sockfd, struct sockaddr_storage their_addr,
       continue;
     }
 
+    // A -99 pagenumber means client closed the connection
     if (file_page.pagenumber == -99) {
       break;
     }
 
-    printf("Recibiendo página %d\n", file_page.pagenumber);
+    // printf("Page: %d", file_page.pagenumber);
 
+    // We only store the page if it hasnt been received yet
     if (!ack_array[file_page.pagenumber]) {
+
       ack_array[file_page.pagenumber] = true;
       size_t offset = file_page.pagenumber * PAGE_SIZE;
+
       memcpy(file_buf + offset, file_page.data, PAGE_SIZE);
       recvd_pages++;
     }
@@ -215,9 +222,20 @@ void receive_file(int sockfd, struct sockaddr_storage their_addr,
     response[0].pagenumber = file_page.pagenumber;
     response[0].ack = ACK;
 
+    // printf("OK \n");
     if ((numbytes = sendto(sockfd, reply, sizeof(reply), 0,
                            (struct sockaddr *)&their_addr, addr_len)) == -1) {
       perror("sendto");
     }
+  }
+
+  // transmission done, send finish to client
+  response[0].pagenumber = -99;
+  response[0].ack = END_OF_TRANSMISSION;
+
+  printf("Sending eot ");
+  if ((numbytes = sendto(sockfd, reply, sizeof(reply), 0,
+                         (struct sockaddr *)&their_addr, addr_len)) == -1) {
+    perror("sendto");
   }
 }
